@@ -25,7 +25,7 @@
           data-col="{{cell.col}}"
           bindtap="handleCellTap"
           bindlongpress="handleCellLongPress"
-          style="width: {{cellOuterSize}}rpx; height: {{cellOuterSize}}rpx;"
+          style="width: {{cellOuterSize}}rpx; height: {{cellOuterSize}}rpx; animation-delay: {{cell.revealDelay || 0}}ms;"
         >
           <text wx:if="{{cell.text}}">{{cell.text}}</text>
           <view wx:if="{{cell.exploding}}" class="cell-explosion"></view>

@@ -173,6 +173,7 @@ Page({
           col: colIndex,
           flag,
           numberClass: "",
+          revealDelay: 0,
         };
 
         if (cell === Minesweeper.EXPLODED) {
@@ -190,7 +191,12 @@ Page({
 
         if (gameState === "won") {
           if (cell === Minesweeper.MINE) {
-            return { ...base, state: "mine", text: "💣" };
+            return {
+              ...base,
+              state: "mine-win",
+              text: "💣",
+              revealDelay: (rowIndex + colIndex) * 60,
+            };
           }
           return { ...base, state: "blank", text: "" };
         }
