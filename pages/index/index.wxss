@@ -5,6 +5,11 @@
   align-items: center;
   gap: 32rpx;
   padding: 48rpx 24rpx 64rpx;
+  transition: transform 0.2s ease;
+}
+
+.page--shake {
+  animation: page-shake 500ms ease-in-out;
 }
 
 .hud {
@@ -66,6 +71,12 @@
   box-shadow: inset 0 0 0 2rpx rgba(255, 255, 255, 0.3);
 }
 
+.board--dim {
+  filter: grayscale(0.7);
+  opacity: 0.75;
+  transition: filter 400ms ease, opacity 400ms ease;
+}
+
 .rules {
   width: 100%;
   max-width: 640rpx;
@@ -114,6 +125,8 @@
   font-weight: 600;
   font-size: 28rpx;
   color: #111827;
+  position: relative;
+  overflow: hidden;
 }
 
 .cell text {
@@ -157,6 +170,19 @@
   border: 2rpx solid #7f1d1d;
 }
 
+.cell-explosion {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+  transform: translate(-50%, -50%);
+  animation: explosion-pulse 650ms ease-out forwards;
+  pointer-events: none;
+}
+
 .cell--num-1 { color: #1d4ed8; }
 .cell--num-2 { color: #15803d; }
 .cell--num-3 { color: #b91c1c; }
@@ -165,3 +191,64 @@
 .cell--num-6 { color: #0f766e; }
 .cell--num-7 { color: #111827; }
 .cell--num-8 { color: #6b7280; }
+
+.flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(239, 68, 68, 0.3);
+  pointer-events: none;
+  animation: flash-blink 350ms ease-in-out 0s 2;
+  z-index: 5;
+}
+
+@keyframes page-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8rpx);
+  }
+  40% {
+    transform: translateX(6rpx);
+  }
+  60% {
+    transform: translateX(-4rpx);
+  }
+  80% {
+    transform: translateX(2rpx);
+  }
+}
+
+@keyframes explosion-pulse {
+  0% {
+    width: 20%;
+    height: 20%;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.9);
+    opacity: 0.9;
+  }
+  60% {
+    width: 140%;
+    height: 140%;
+    box-shadow: 0 0 30rpx 10rpx rgba(248, 250, 252, 0.4);
+    opacity: 0.5;
+  }
+  100% {
+    width: 180%;
+    height: 180%;
+    box-shadow: 0 0 40rpx 16rpx rgba(15, 23, 42, 0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes flash-blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

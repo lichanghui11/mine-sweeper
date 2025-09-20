@@ -1,6 +1,6 @@
 const DEFAULT_WIDTH = 12;
 const DEFAULT_HEIGHT = 12;
-const DEFAULT_MINES = 24;
+const DEFAULT_MINES = 30;
 const CELL_SIZE = 48;
 const CELL_BORDER = 4;
 const BOARD_PADDING = 16; // 与 .board padding 对齐
@@ -35,6 +35,10 @@ Page({
     cellOuterSize: CELL_OUTER_SIZE,
     safeCells: DEFAULT_WIDTH * DEFAULT_HEIGHT - DEFAULT_MINES,
     revealedSafeCount: 0,
+    shakeActive: false,
+    flashActive: false,
+    dimBoard: false,
+    explosionCell: null,
   },
 
   onLoad() {
@@ -43,6 +47,7 @@ Page({
   },
 
   onUnload() {
+    this.stopLoseEffectTimers();
     this.clearTimer();
   },
 
@@ -87,6 +92,7 @@ Page({
     const flags = this.createMatrix(height, width, " ");
     this.clearTimer();
     this.lastTap = null;
+    this.stopLoseEffectTimers();
     this.setData({
       board,
       flags,
@@ -100,6 +106,10 @@ Page({
       boardPixelSize: calculateBoardPixelSize(width),
       safeCells: width * height - minesCount,
       revealedSafeCount: 0,
+      shakeActive: false,
+      flashActive: false,
+      dimBoard: false,
+      explosionCell: null,
     });
   },
 
@@ -122,7 +132,16 @@ Page({
         };
 
         if (cell === Minesweeper.EXPLODED) {
-          return { ...base, state: "exploded", text: "💥" };
+          const isExplosionCenter =
+            this.data.explosionCell &&
+            this.data.explosionCell.row === rowIndex &&
+            this.data.explosionCell.col === colIndex;
+          return {
+            ...base,
+            state: "exploded",
+            text: "💥",
+            exploding: isExplosionCenter,
+          };
         }
 
         if (cell === "F") {
@@ -213,6 +232,7 @@ Page({
       board: revealedBoard,
       revealedSafe,
       exploded,
+      revealed,
     } = Minesweeper.revealCell(workingBoard, flags, row, col);
 
     let nextBoard = revealedBoard;
@@ -225,6 +245,8 @@ Page({
       nextState = "lost";
       nextStatus = "踩到雷了，再试一次吧";
       this.clearTimer();
+      const explosionCell = this.pickExplosionCell(nextBoard, revealed);
+      this.triggerLoseEffects(explosionCell);
     } else {
       if (revealedSafe > 0) {
         nextState = "playing";
@@ -269,6 +291,7 @@ Page({
       board: expandedBoard,
       exploded,
       revealedSafe,
+      revealed,
     } = Minesweeper.chordOpen(board, flags, row, col);
 
     if (!exploded && revealedSafe === 0) {
@@ -285,6 +308,8 @@ Page({
       nextState = "lost";
       nextStatus = "捷径失败，踩到雷了！";
       this.clearTimer();
+      const explosionCell = this.pickExplosionCell(nextBoard, revealed);
+      this.triggerLoseEffects(explosionCell);
     } else {
       if (revealedSafe > 0) {
         nextState = "playing";
@@ -336,5 +361,56 @@ Page({
         this.data.gameState
       ),
     });
+  },
+
+  pickExplosionCell(board, revealedCells = []) {
+    if (Array.isArray(revealedCells)) {
+      const hit = revealedCells.find(
+        ([r, c]) => board[r] && board[r][c] === Minesweeper.EXPLODED
+      );
+      if (hit) {
+        return { row: hit[0], col: hit[1] };
+      }
+    }
+    for (let r = 0; r < board.length; r += 1) {
+      for (let c = 0; c < board[0].length; c += 1) {
+        if (board[r][c] === Minesweeper.EXPLODED) {
+          return { row: r, col: c };
+        }
+      }
+    }
+    return null;
+  },
+
+  triggerLoseEffects(explosionCell) {
+    this.stopLoseEffectTimers();
+
+    this.setData({
+      shakeActive: true,
+      flashActive: true,
+      dimBoard: true,
+      explosionCell,
+    });
+
+    this.shakeTimer = setTimeout(() => {
+      this.setData({ shakeActive: false });
+      this.shakeTimer = null;
+    }, 500);
+
+    this.flashTimer = setTimeout(() => {
+      this.setData({ flashActive: false });
+      this.flashTimer = null;
+    }, 700);
+  },
+
+  stopLoseEffectTimers() {
+    if (this.shakeTimer) {
+      clearTimeout(this.shakeTimer);
+      this.shakeTimer = null;
+    }
+    if (this.flashTimer) {
+      clearTimeout(this.flashTimer);
+      this.flashTimer = null;
+    }
   },
 });

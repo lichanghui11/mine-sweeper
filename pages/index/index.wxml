@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page {{shakeActive ? 'page--shake' : ''}}">
   <view class="hud">
     <view class="stat">
       <text class="stat-label">雷数</text>
@@ -14,7 +14,7 @@
   <view class="status-message">{{statusMessage}}</view>
 
   <view
-    class="board"
+    class="board {{dimBoard ? 'board--dim' : ''}}"
     style="width: {{boardPixelSize}}rpx; grid-template-columns: repeat({{width}}, {{cellOuterSize}}rpx); grid-auto-rows: {{cellOuterSize}}rpx;"
   >
     <block wx:for="{{displayGrid}}" wx:for-item="row" wx:for-index="rowIndex" wx:key="index">
@@ -28,10 +28,13 @@
           style="width: {{cellOuterSize}}rpx; height: {{cellOuterSize}}rpx;"
         >
           <text wx:if="{{cell.text}}">{{cell.text}}</text>
+          <view wx:if="{{cell.exploding}}" class="cell-explosion"></view>
         </view>
       </block>
     </block>
   </view>
+
+  <view wx:if="{{flashActive}}" class="flash-overlay"></view>
 
   <view class="rules">
     <view class="rule-item">
