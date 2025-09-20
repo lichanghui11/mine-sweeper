@@ -56,6 +56,7 @@
 
 .board {
   display: grid;
+  grid-gap: 0;
   justify-content: center;
   padding: 16rpx;
   border-radius: 12rpx;
@@ -87,10 +88,6 @@
   background: #d1d5db;
 }
 
-.cell--flag {
-  color: #ef4444;
-}
-
 .cell--mine {
   background: #dc2626;
   color: #f8fafc;
@@ -100,6 +97,26 @@
 .cell--number {
   border: 2rpx solid #7b7b7b;
   background: #d1d5db;
+}
+
+.cell--flag {
+  color: #dc2626;
+}
+
+.cell--question {
+  color: #facc15;
+}
+
+.cell--mistake {
+  background: #1f2933;
+  color: #f87171;
+  border: 2rpx solid #ef4444;
+}
+
+.cell--exploded {
+  background: #b91c1c;
+  color: #f8fafc;
+  border: 2rpx solid #7f1d1d;
 }
 
 .cell--num-1 { color: #1d4ed8; }
