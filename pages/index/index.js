@@ -1,49 +1,107 @@
-// index.js
-const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
+const DEFAULT_WIDTH = 12
+const DEFAULT_HEIGHT = 12
+const DEFAULT_MINES = 10
+const CELL_SIZE = 48
+const CELL_BORDER = 4
+const BOARD_PADDING = 16 // 与 .board padding 对齐
+const BOARD_BORDER = 4 // 与 .board border-width 对齐
+const CELL_OUTER_SIZE = CELL_SIZE + CELL_BORDER * 2
+
+function calculateBoardPixelSize(width) {
+  return width * CELL_OUTER_SIZE + 2 * (BOARD_PADDING + BOARD_BORDER)
+}
 
 Page({
   data: {
-    motto: 'Hello World',
-    userInfo: {
-      avatarUrl: defaultAvatarUrl,
-      nickName: '',
-    },
-    hasUserInfo: false,
-    canIUseGetUserProfile: wx.canIUse('getUserProfile'),
-    canIUseNicknameComp: wx.canIUse('input.type.nickname'),
+    width: DEFAULT_WIDTH,
+    height: DEFAULT_HEIGHT,
+    minesCount: DEFAULT_MINES,
+    board: [],
+    flags: [],
+    displayGrid: [],
+    remainingMines: DEFAULT_MINES,
+    elapsed: 0,
+    timerRunning: false,
+    firstClickDone: false,
+    gameState: 'idle',
+    statusMessage: '点击任意方块开始游戏',
+    questionMarksEnabled: true,
+    boardPixelSize: calculateBoardPixelSize(DEFAULT_WIDTH),
+    cellSize: CELL_SIZE,
+    cellBorder: CELL_BORDER,
+    cellOuterSize: CELL_OUTER_SIZE
   },
-  bindViewTap() {
-    wx.navigateTo({
-      url: '../logs/logs'
-    })
+
+  onLoad() {
+    this.resetGame()
   },
-  onChooseAvatar(e) {
-    const { avatarUrl } = e.detail
-    const { nickName } = this.data.userInfo
+
+  onUnload() {
+    this.clearTimer()
+  },
+
+  handleReset() {
+    this.resetGame()
+  },
+
+  handleCellTap(e) {
+    const { row, col } = e.currentTarget.dataset
+    if (row === undefined || col === undefined) return
+    console.log('tap cell', row, col)
+  },
+
+  handleCellLongPress(e) {
+    const { row, col } = e.currentTarget.dataset
+    if (row === undefined || col === undefined) return
+    console.log('long press cell', row, col)
+  },
+
+  resetGame() {
+    const { width, height, minesCount } = this.data
+    const board = this.createMatrix(height, width, 'E')
+    const flags = this.createMatrix(height, width, ' ')
+    this.clearTimer()
     this.setData({
-      "userInfo.avatarUrl": avatarUrl,
-      hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
+      board,
+      flags,
+      displayGrid: this.composeDisplayGrid(board, flags),
+      remainingMines: minesCount,
+      elapsed: 0,
+      timerRunning: false,
+      firstClickDone: false,
+      gameState: 'idle',
+      statusMessage: '点击任意方块开始游戏',
+      boardPixelSize: calculateBoardPixelSize(width)
     })
   },
-  onInputChange(e) {
-    const nickName = e.detail.value
-    const { avatarUrl } = this.data.userInfo
-    this.setData({
-      "userInfo.nickName": nickName,
-      hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
-    })
+
+  createMatrix(rows, cols, fillValue) {
+    return Array.from({ length: rows }, () => Array.from({ length: cols }, () => fillValue))
   },
-  getUserProfile(e) {
-    // 推荐使用wx.getUserProfile获取用户信息，开发者每次通过该接口获取用户个人信息均需用户确认，开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
-    wx.getUserProfile({
-      desc: '展示用户信息', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
-      success: (res) => {
-        console.log(res)
-        this.setData({
-          userInfo: res.userInfo,
-          hasUserInfo: true
-        })
-      }
-    })
+
+  composeDisplayGrid(board, flags) {
+    return board.map((row, rowIndex) =>
+      row.map((cell, colIndex) => {
+        const flag = flags[rowIndex][colIndex]
+        const isFlag = flag === 'P'
+        const isQuestion = flag === '?'
+        return {
+          id: `${rowIndex}-${colIndex}`,
+          row: rowIndex,
+          col: colIndex,
+          state: 'hidden',
+          flag,
+          text: isFlag ? 'F' : isQuestion ? '?' : '',
+          numberClass: ''
+        }
+      })
+    )
   },
+
+  clearTimer() {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
+    }
+  }
 })

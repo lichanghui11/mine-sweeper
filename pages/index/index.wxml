@@ -1,27 +1,35 @@
-<!--index.wxml-->
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="userinfo">
-      <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
-        <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-          <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
-        </button>
-        <view class="nickname-wrapper">
-          <text class="nickname-label">昵称</text>
-          <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
-        </view>
-      </block>
-      <block wx:elif="{{!hasUserInfo}}">
-        <button wx:if="{{canIUseGetUserProfile}}" bindtap="getUserProfile"> 获取头像昵称 </button>
-        <view wx:else> 请使用2.10.4及以上版本基础库 </view>
-      </block>
-      <block wx:else>
-        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
-        <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-      </block>
+<view class="page">
+  <view class="hud">
+    <view class="stat">
+      <text class="stat-label">雷数</text>
+      <text class="stat-value">{{remainingMines}}</text>
     </view>
-    <view class="usermotto">
-      <text class="user-motto">{{motto}}</text>
+    <button class="reset-button" bindtap="handleReset">重新开始</button>
+    <view class="stat">
+      <text class="stat-label">用时</text>
+      <text class="stat-value">{{elapsed}}s</text>
     </view>
   </view>
-</scroll-view>
+
+  <view class="status-message">{{statusMessage}}</view>
+
+  <view
+    class="board"
+    style="width: {{boardPixelSize}}rpx; grid-template-columns: repeat({{width}}, {{cellOuterSize}}rpx); grid-auto-rows: {{cellOuterSize}}rpx;"
+  >
+    <block wx:for="{{displayGrid}}" wx:for-item="row" wx:for-index="rowIndex" wx:key="index">
+      <block wx:for="{{row}}" wx:for-item="cell" wx:key="id">
+        <view
+          class="cell cell--{{cell.state}} {{cell.numberClass}}"
+          data-row="{{cell.row}}"
+          data-col="{{cell.col}}"
+          bindtap="handleCellTap"
+          bindlongpress="handleCellLongPress"
+          style="width: {{cellOuterSize}}rpx; height: {{cellOuterSize}}rpx;"
+        >
+          <text wx:if="{{cell.text}}">{{cell.text}}</text>
+        </view>
+      </block>
+    </block>
+  </view>
+</view>
