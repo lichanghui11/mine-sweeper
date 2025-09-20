@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #stage {
+        font-size: 0;
+        margin-left: 20px;
+        margin-top: 20px;
+      }
+      button{
+        outline: none;
+        box-sizing: border-box;
+        width: 16px;
+        height: 16px;
+        line-height: 15px;
+        border: 2px solid;
+        border-color: white #7b7b7b #7b7b7b white;
+        background-color: #bdbdbd;
+        vertical-align: bottom;
+      }
+      button.blank, button.number{
+        /* border: transparent; */
+        border: 1px solid #7b7b7b;
+        border-width: 1px 0 0 1px;
+      }
+      button.unrevealed:active {
+        border-color: #bdbdbd;
+      }
+      button[data-num="1"] {
+        color: #0400fe
+      }
+      button[data-num="2"] {
+        color: #33a948
+      }
+      button[data-num="3"] {
+        color: #ec0022
+      }
+      button[data-num="4"] {
+        color: #010077
+      }
+      button[data-num="5"] {
+        color: #7a0000
+      }
+      button[data-num="6"] {
+        color: #008477
+      }
+      button[data-num="7"] {
+        color: #010000
+      }
+      button[data-num="8"] {
+        color: #767575
+      }
+      
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script>
+      const stage = document.querySelector('#stage')
+      let width = 20, height = 20  
+      let board = new Array(height).fill(0).map(() => new Array(width).fill('E'))
+      let flags = new Array(height).fill(0).map(() => new Array(width).fill(' '))
+      for (let r = 0; r < height; r++) {
+        for (let c = 0; c < width; c++) {
+          if (Math.random() < 0.2) {
+            board[r][c] = "M"
+          }
+        }
+      }
+      console.log('the board: ', board)
+      function render() {
+        stage.innerHTML = board.map((row, rowIdx) => {
+          return row.map((cell, colIdx) => {
+            if (cell === "M") {
+              return `<button data-row="${rowIdx}" data-col="${colIdx}" class="unrevealed">${flags[rowIdx][colIdx]}</button>`
+            }
+            if (cell === "E") {
+              return `<button data-row="${rowIdx}" data-col="${colIdx}" class="unrevealed">${flags[rowIdx][colIdx]}</button>`
+            }
+            if (cell === "B") {
+              return `<button data-row="${rowIdx}" data-col="${colIdx}" class="blank"></button>`
+            }
+            if (cell >= '1' && cell <= '8') {
+              return `<button data-row="${rowIdx}" data-col="${colIdx}" data-num="${cell}" class="number">${cell}</button>`
+            }
+            if (cell === "X") {
+              return `<button data-row="${rowIdx}" data-col="${colIdx}" class="mine">X</button>`
+            }
+          }).join('')
+        }).join('<br>')
+      }
+      
+      render()
+      stage.addEventListener('click', e => {
+        if(e.target.matches('button.unrevealed')) {
+          const btn = e.target
+          const row = +btn.dataset.row
+          const col = +btn.dataset.col
+          updateBoard(board, [row, col])
+          render()
+        }
+      })
+      // 鼠标事件按键说明：
+      // - e.button 表示当前触发事件的是哪一个键（推荐用法，替代已废弃的 e.which）
+      //   0 = 左键   1 = 中键   2 = 右键
+      // - e.buttons 表示当前状态下“哪些键仍然被按住”（位掩码，可组合）
+      //   1 = 左键   2 = 右键   4 = 中键  (例如 e.buttons === 3 表示左键+右键同时按住)
+      // 注意：不要再用 e.which，已经被废弃。用 e.button / e.buttons 代替。
+      stage.addEventListener('contextmenu', e=>{
+        // 阻止默认的右键菜单
+        e.preventDefault()
+      })
+      stage.addEventListener('mouseup', e => {
+        // which 3 为右键
+        // 现代用法：button 2为右键
+        if (e.button === 2 && e.target.matches('button')) {
+          const btn = e.target
+          const row = +btn.dataset.row
+          const col = +btn.dataset.col
+          const char = flags[row][col]
+          if (char === ' ') {
+            flags[row][col] = 'P'
+          } else if (char === 'P') {
+            flags[row][col] = '?'
+          } else if (char === '?') {
+            flags[row][col] = ' '
+          }
+          render()
+        }
+        // 现代用法： 0:左 1:中 2:右
+        if (e.button === 1 && e.target.matches('button')){
+          const btn = e.target
+          const r = +btn.dataset.row
+          const c = +btn.dataset.col
+          const mines = +btn.dataset.num
+          if (countFlags(flags, [r, c]) === mines) {
+            // 鼠标中建点击数字的时候
+            // 如果周围的雷的数量与其周围的旗子数量一致，就扩散周围格子，翻开雷
+            for (let row = r - 1; row <= r + 1; row++) {
+              for (let col = c - 1; col <= c + 1; col++) {
+                if ((board[r][c] === 'E' || board[r][c] === 'M') && flags[r][c] === 'P') revealAjacent(board, [r, c])
+              }
+          }
+        }
+        render()
+      }
+    })
+    
+  /**
+   * 旗帜🚩标记不能点击，问号❓标记可以点击
+   **/
+  stage.addEventListener('mousedown', e => {
+    if (e.button === 1) {
+      const btn = e.target
+      const r = +btn.dataset.row
+      const c = +btn.dataset.col
+    }
+  })
+  stage.addEventListener('mousemove', e => {
+    
+    const btn = e.target
+    const r = +btn.dataset.row
+    const c = +btn.dataset.col
+  })
+  
+  function updateBoard(board, click) {
+    const [r, c] = click;
+    const target = board[r][c];
+
+    if (target === "M") {
+      board[r][c] = "X";
+      return board;
+    }
+    revealAjacent(board, [r, c]);
+    return board;
+  }
+  function revealAjacent(board, [r, c]) {
+    // 越界 || 不是 'E'
+    if (!inRange(board, r, c) || board[r][c] !== "E") return;
+
+    let count = countMines(board, [r, c]);
+    if (count === 0) {
+      board[r][c] = "B";
+      for (let row = r - 1; row <= r + 1; row++) {
+        for (let col = c - 1; col <= c + 1; col++) {
+          if (!inRange(board, row, col) || (row === r && col === c))
+            continue;
+          revealAjacent(board, [row, col]);
+        }
+      }
+    } else {
+      board[r][c] = String(count);
+    }
+  }
+  function countFlags(flags, [r, c]) {
+      let count = 0
+      for (let row = r - 1; row <= r + 1; row++) {
+        for (let col = c - 1; col <= c + 1; col++) {
+          if (!inRange(flags, row, col) || (row === r && col === c))
+          continue;
+        count++
+      }
+    }
+      return count
+    }
+  function countMines(board, [r, c]) {
+    let count = 0;
+    for (let row = r - 1; row <= r + 1; row++) {
+      for (let col = c - 1; col <= c + 1; col++) {
+        if (!inRange(board, row, col) || (row === r && col === c)) continue;
+        if (board[row][col] === "M") count++;
+      }
+    }
+    return count;
+  }
+  function inRange(board, r, c) {
+    if (r >= 0 && c >= 0 && board.length > r && board[0].length > c)
+      return true;
+    return false;
+  }
+    </script>
+  </body>
+</html>
