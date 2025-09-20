@@ -95,13 +95,14 @@
       
       render()
       stage.addEventListener('click', e => {
-        if(e.target.matches('button.unrevealed')) {
-          const btn = e.target
-          const row = +btn.dataset.row
-          const col = +btn.dataset.col
-          updateBoard(board, [row, col])
-          render()
-        }
+        if (!e.target.matches('button.unrevealed')) return
+        const btn = e.target
+        const row = +btn.dataset.row
+        const col = +btn.dataset.col
+        if (Number.isNaN(row) || Number.isNaN(col)) return
+        if (flags[row][col] === 'P') return
+        updateBoard(board, flags, [row, col])
+        render()
       })
       // 鼠标事件按键说明：
       // - e.button 表示当前触发事件的是哪一个键（推荐用法，替代已废弃的 e.which）
@@ -114,40 +115,50 @@
         e.preventDefault()
       })
       stage.addEventListener('mouseup', e => {
+        if (!e.target.matches('button')) return
+        const btn = e.target
+        const r = +btn.dataset.row
+        const c = +btn.dataset.col
+        if (Number.isNaN(r) || Number.isNaN(c)) return
+
         // which 3 为右键
         // 现代用法：button 2为右键
-        if (e.button === 2 && e.target.matches('button')) {
-          const btn = e.target
-          const row = +btn.dataset.row
-          const col = +btn.dataset.col
-          const char = flags[row][col]
+        if (e.button === 2) {
+          const char = flags[r][c]
           if (char === ' ') {
-            flags[row][col] = 'P'
+            flags[r][c] = 'P'
           } else if (char === 'P') {
-            flags[row][col] = '?'
+            flags[r][c] = '?'
           } else if (char === '?') {
-            flags[row][col] = ' '
+            flags[r][c] = ' '
           }
           render()
+          return
         }
         // 现代用法： 0:左 1:中 2:右
-        if (e.button === 1 && e.target.matches('button')){
-          const btn = e.target
-          const r = +btn.dataset.row
-          const c = +btn.dataset.col
-          const mines = +btn.dataset.num
-          if (countFlags(flags, [r, c]) === mines) {
-            // 鼠标中建点击数字的时候
-            // 如果周围的雷的数量与其周围的旗子数量一致，就扩散周围格子，翻开雷
-            for (let row = r - 1; row <= r + 1; row++) {
-              for (let col = c - 1; col <= c + 1; col++) {
-                if ((board[r][c] === 'E' || board[r][c] === 'M') && flags[r][c] === 'P') revealAjacent(board, [r, c])
+        if (e.button === 1) {
+          const mines = Number(btn.dataset.num)
+          if (!Number.isInteger(mines)) return
+          if (countFlags(flags, [r, c]) !== mines) return
+          let updated = false
+          for (let row = r - 1; row <= r + 1; row++) {
+            for (let col = c - 1; col <= c + 1; col++) {
+              if (!inRange(board, row, col) || (row === r && col === c)) continue
+              if (flags[row][col] === 'P') continue
+              if (board[row][col] === 'M') {
+                board[row][col] = 'X'
+                updated = true
+                continue
               }
+              if (board[row][col] === 'E') {
+                revealAdjacent(board, flags, [row, col])
+                updated = true
+              }
+            }
           }
+          if (updated) render()
         }
-        render()
-      }
-    })
+      })
     
   /**
    * 旗帜🚩标记不能点击，问号❓标记可以点击
@@ -166,29 +177,31 @@
     const c = +btn.dataset.col
   })
   
-  function updateBoard(board, click) {
+  function updateBoard(board, flags, click) {
     const [r, c] = click;
+    if (!inRange(board, r, c)) return board;
+    if (flags[r][c] === 'P') return board;
     const target = board[r][c];
-
+    if (target !== "E" && target !== "M") return board;
     if (target === "M") {
       board[r][c] = "X";
       return board;
     }
-    revealAjacent(board, [r, c]);
+    revealAdjacent(board, flags, [r, c]);
     return board;
   }
-  function revealAjacent(board, [r, c]) {
-    // 越界 || 不是 'E'
-    if (!inRange(board, r, c) || board[r][c] !== "E") return;
+  function revealAdjacent(board, flags, [r, c]) {
+    // 越界 || 不是 'E' || 插旗格
+    if (!inRange(board, r, c) || board[r][c] !== "E" || flags[r][c] === 'P') return;
 
     let count = countMines(board, [r, c]);
     if (count === 0) {
       board[r][c] = "B";
       for (let row = r - 1; row <= r + 1; row++) {
         for (let col = c - 1; col <= c + 1; col++) {
-          if (!inRange(board, row, col) || (row === r && col === c))
+          if (!inRange(board, row, col) || (row === r && col === c) || flags[row][col] === 'P')
             continue;
-          revealAjacent(board, [row, col]);
+          revealAdjacent(board, flags, [row, col]);
         }
       }
     } else {
@@ -196,16 +209,15 @@
     }
   }
   function countFlags(flags, [r, c]) {
-      let count = 0
-      for (let row = r - 1; row <= r + 1; row++) {
-        for (let col = c - 1; col <= c + 1; col++) {
-          if (!inRange(flags, row, col) || (row === r && col === c))
-          continue;
-        count++
+    let count = 0
+    for (let row = r - 1; row <= r + 1; row++) {
+      for (let col = c - 1; col <= c + 1; col++) {
+        if (!inRange(flags, row, col) || (row === r && col === c)) continue
+        if (flags[row][col] === 'P') count++
       }
     }
-      return count
-    }
+    return count
+  }
   function countMines(board, [r, c]) {
     let count = 0;
     for (let row = r - 1; row <= r + 1; row++) {
