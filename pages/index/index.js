@@ -44,12 +44,14 @@ Page({
 
   onLoad() {
     this.lastTap = null;
+    this.initAudio();
     this.resetGame();
   },
 
   onUnload() {
     this.stopLoseEffectTimers();
     this.clearTimer();
+    this.destroyAudio();
   },
 
   handleReset() {
@@ -113,6 +115,46 @@ Page({
       explosionCell: null,
       winCelebration: false,
     });
+  },
+
+  initAudio() {
+    if (this.audio) this.destroyAudio();
+    this.audio = {
+      click: wx.createInnerAudioContext(),
+      expand: wx.createInnerAudioContext(),
+      flag: wx.createInnerAudioContext(),
+      win: wx.createInnerAudioContext(),
+      lose: wx.createInnerAudioContext(),
+    };
+    this.audio.click.src = "/assets/audio/minesweeper_click.wav";
+    this.audio.expand.src = "/assets/audio/minesweeper_expand.wav";
+    this.audio.flag.src = "/assets/audio/minesweeper_flag.wav";
+    this.audio.win.src = "/assets/audio/minesweeper_win.wav";
+    this.audio.lose.src = "/assets/audio/minesweeper_lose.wav";
+  },
+
+  destroyAudio() {
+    if (!this.audio) return;
+    Object.values(this.audio).forEach((ctx) => {
+      try {
+        ctx.stop();
+      } catch (e) {
+        // ignore stop error
+      }
+      ctx.destroy();
+    });
+    this.audio = null;
+  },
+
+  playSound(key) {
+    const ctx = this.audio && this.audio[key];
+    if (!ctx) return;
+    try {
+      ctx.stop();
+      ctx.play();
+    } catch (error) {
+      console.warn("audio play error", key, error);
+    }
   },
 
   createMatrix(rows, cols, fillValue) {
@@ -249,6 +291,7 @@ Page({
       this.clearTimer();
       const explosionCell = this.pickExplosionCell(nextBoard, revealed);
       this.triggerLoseEffects(explosionCell);
+      this.playSound("lose");
     } else {
       if (revealedSafe > 0) {
         nextState = "playing";
@@ -262,6 +305,9 @@ Page({
           flags
         );
         this.triggerWinEffects();
+        this.playSound("win");
+      } else if (revealedSafe > 0) {
+        this.playSound("click");
       }
     }
 
@@ -298,6 +344,7 @@ Page({
     } = Minesweeper.chordOpen(board, flags, row, col);
 
     if (!exploded && revealedSafe === 0) {
+      this.playSound("click");
       return;
     }
 
@@ -313,10 +360,8 @@ Page({
       this.clearTimer();
       const explosionCell = this.pickExplosionCell(nextBoard, revealed);
       this.triggerLoseEffects(explosionCell);
+      this.playSound("lose");
     } else {
-      if (revealedSafe > 0) {
-        nextState = "playing";
-      }
       if (updatedRevealedSafe >= safeCells) {
         nextState = "won";
         nextStatus = "恭喜你，成功排雷！";
@@ -326,6 +371,10 @@ Page({
           flags
         );
         this.triggerWinEffects();
+        this.playSound("win");
+      } else if (revealedSafe > 0) {
+        nextState = "playing";
+        this.playSound("expand");
       }
     }
 
@@ -365,6 +414,7 @@ Page({
         this.data.gameState
       ),
     });
+    this.playSound("flag");
   },
 
   pickExplosionCell(board, revealedCells = []) {
