@@ -188,6 +188,13 @@ Page({
           };
         }
 
+        if (gameState === "won") {
+          if (cell === Minesweeper.MINE) {
+            return { ...base, state: "mine", text: "💣" };
+          }
+          return { ...base, state: "blank", text: "" };
+        }
+
         if (cell === "F") {
           return { ...base, state: "mistake", text: "✖" };
         }
