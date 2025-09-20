@@ -32,4 +32,27 @@
       </block>
     </block>
   </view>
+
+  <view class="rules">
+    <view class="rule-item">
+      <text class="rule-key">单击</text>
+      <text class="rule-value">翻开方块，首击不会遇雷</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-key">长按</text>
+      <text class="rule-value">空白 → 🚩 → ❓ 循环</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-key">双击数字</text>
+      <text class="rule-value">周围旗帜数等于数字时自动翻开剩余邻格；若误标旗会踩雷。</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-key">胜利</text>
+      <text class="rule-value">所有非雷格翻开即可胜利，雷可未插旗。</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-key">失败</text>
+      <text class="rule-value">翻到雷或快速开误触雷，将显示全部雷并标出错旗。</text>
+    </view>
+  </view>
 </view>
