@@ -1,6 +1,6 @@
 const DEFAULT_WIDTH = 12;
 const DEFAULT_HEIGHT = 12;
-const DEFAULT_MINES = 30;
+const DEFAULT_MINES = 26;
 const CELL_SIZE = 48;
 const CELL_BORDER = 4;
 const BOARD_PADDING = 16; // 与 .board padding 对齐
@@ -39,6 +39,7 @@ Page({
     flashActive: false,
     dimBoard: false,
     explosionCell: null,
+    winCelebration: false,
   },
 
   onLoad() {
@@ -110,6 +111,7 @@ Page({
       flashActive: false,
       dimBoard: false,
       explosionCell: null,
+      winCelebration: false,
     });
   },
 
@@ -259,6 +261,7 @@ Page({
           revealedBoard,
           flags
         );
+        this.triggerWinEffects();
       }
     }
 
@@ -322,6 +325,7 @@ Page({
           expandedBoard,
           flags
         );
+        this.triggerWinEffects();
       }
     }
 
@@ -390,6 +394,7 @@ Page({
       flashActive: true,
       dimBoard: true,
       explosionCell,
+      winCelebration: false,
     });
 
     this.shakeTimer = setTimeout(() => {
@@ -412,5 +417,19 @@ Page({
       clearTimeout(this.flashTimer);
       this.flashTimer = null;
     }
+  },
+
+  triggerWinEffects() {
+    if (this.winTimer) {
+      clearTimeout(this.winTimer);
+      this.winTimer = null;
+    }
+
+    this.setData({ winCelebration: true, dimBoard: false, flashActive: false });
+
+    this.winTimer = setTimeout(() => {
+      this.setData({ winCelebration: false });
+      this.winTimer = null;
+    }, 2500);
   },
 });

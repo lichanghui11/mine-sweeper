@@ -36,6 +36,20 @@
 
   <view wx:if="{{flashActive}}" class="flash-overlay"></view>
 
+  <view wx:if="{{winCelebration}}" class="win-overlay">
+    <view class="win-banner">成功啦！</view>
+    <view class="win-fireworks">
+      <block wx:for="{{5}}" wx:key="index">
+        <view class="firework firework--{{index}}"></view>
+      </block>
+    </view>
+    <view class="win-confetti">
+      <block wx:for="{{30}}" wx:key="index">
+        <view class="confetti confetti--{{index % 5}}"></view>
+      </block>
+    </view>
+  </view>
+
   <view class="rules">
     <view class="rule-item">
       <text class="rule-key">单击</text>

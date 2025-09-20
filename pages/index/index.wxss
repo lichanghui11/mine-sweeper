@@ -192,6 +192,66 @@
 .cell--num-7 { color: #111827; }
 .cell--num-8 { color: #6b7280; }
 
+.win-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.win-banner {
+  font-size: 64rpx;
+  font-weight: 800;
+  color: #f8fafc;
+  text-shadow: 0 6rpx 12rpx rgba(15, 23, 42, 0.6);
+  letter-spacing: 4rpx;
+  animation: win-pop 1200ms ease-out;
+}
+
+.win-fireworks,
+.win-confetti {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.firework {
+  position: absolute;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  opacity: 0;
+  animation: firework-burst 1200ms ease-out infinite;
+}
+
+.firework--0 { top: 30%; left: 20%; background: #38bdf8; animation-delay: 0s; }
+.firework--1 { top: 28%; right: 18%; background: #f472b6; animation-delay: 0.2s; }
+.firework--2 { bottom: 32%; left: 25%; background: #facc15; animation-delay: 0.3s; }
+.firework--3 { bottom: 30%; right: 22%; background: #34d399; animation-delay: 0.45s; }
+.firework--4 { top: 18%; left: 48%; background: #c084fc; animation-delay: 0.6s; }
+
+.win-confetti .confetti {
+  position: absolute;
+  top: -10%;
+  width: 8rpx;
+  height: 22rpx;
+  border-radius: 4rpx;
+  animation: confetti-fall 1800ms linear forwards;
+}
+
+.confetti--0 { background: #facc15; left: 5%; animation-delay: 0s; }
+.confetti--1 { background: #38bdf8; left: 15%; animation-delay: 0.1s; }
+.confetti--2 { background: #f472b6; left: 30%; animation-delay: 0.2s; }
+.confetti--3 { background: #34d399; left: 45%; animation-delay: 0.3s; }
+.confetti--4 { background: #c084fc; left: 60%; animation-delay: 0.4s; }
+.win-confetti .confetti:nth-child(odd) { transform: rotate(12deg); }
+.win-confetti .confetti:nth-child(even) { transform: rotate(-16deg); }
+
 .flash-overlay {
   position: fixed;
   inset: 0;
@@ -249,6 +309,54 @@
     opacity: 1;
   }
   100% {
+    opacity: 0;
+  }
+}
+
+@keyframes win-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes firework-burst {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(120%) rotate(360deg);
     opacity: 0;
   }
 }
