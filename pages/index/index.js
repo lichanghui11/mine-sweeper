@@ -6,6 +6,7 @@ const CELL_BORDER = 4
 const BOARD_PADDING = 16 // 与 .board padding 对齐
 const BOARD_BORDER = 4 // 与 .board border-width 对齐
 const CELL_OUTER_SIZE = CELL_SIZE + CELL_BORDER * 2
+const DOUBLE_TAP_THRESHOLD = 250
 
 const Minesweeper = require('../../utils/minesweeper.js')
 
@@ -37,6 +38,7 @@ Page({
   },
 
   onLoad() {
+    this.lastTap = null
     this.resetGame()
   },
 
@@ -51,12 +53,31 @@ Page({
   handleCellTap(e) {
     const { row, col } = e.currentTarget.dataset
     if (row === undefined || col === undefined) return
+    const now = e.timeStamp
+    const board = this.data.board
+    const cellValue = board && board[row] ? board[row][col] : null
+
+    if (
+      this.lastTap &&
+      now - this.lastTap.time < DOUBLE_TAP_THRESHOLD &&
+      this.lastTap.row === row &&
+      this.lastTap.col === col &&
+      cellValue >= '1' &&
+      cellValue <= '8'
+    ) {
+      this.lastTap = null
+      this.processQuickOpen(row, col)
+      return
+    }
+
+    this.lastTap = { row, col, time: now }
     this.processCellTap(row, col)
   },
 
   handleCellLongPress(e) {
     const { row, col } = e.currentTarget.dataset
     if (row === undefined || col === undefined) return
+    this.lastTap = null
     this.toggleFlag(row, col)
   },
 
@@ -65,6 +86,7 @@ Page({
     const board = Minesweeper.createEmptyBoard(height, width)
     const flags = this.createMatrix(height, width, ' ')
     this.clearTimer()
+    this.lastTap = null
     this.setData({
       board,
       flags,
@@ -215,6 +237,63 @@ Page({
       board: nextBoard,
       displayGrid: this.composeDisplayGrid(nextBoard, flags, nextState),
       firstClickDone: nextFirstClickDone,
+      gameState: nextState,
+      statusMessage: nextStatus,
+      revealedSafeCount: updatedRevealedSafe
+    })
+  },
+
+  processQuickOpen(row, col) {
+    const {
+      board,
+      flags,
+      firstClickDone,
+      gameState,
+      revealedSafeCount,
+      safeCells
+    } = this.data
+
+    if (!firstClickDone) return
+    if (gameState === 'lost' || gameState === 'won') return
+    const center = board[row][col]
+    if (!(center >= '1' && center <= '8')) return
+
+    const { board: expandedBoard, exploded, revealedSafe } = Minesweeper.chordOpen(
+      board,
+      flags,
+      row,
+      col
+    )
+
+    if (!exploded && revealedSafe === 0) {
+      return
+    }
+
+    let nextBoard = expandedBoard
+    let updatedRevealedSafe = revealedSafeCount + revealedSafe
+    let nextState = gameState
+    let nextStatus = this.data.statusMessage
+
+    if (exploded) {
+      nextBoard = Minesweeper.revealMinesAndMarkMistakes(expandedBoard, flags)
+      nextState = 'lost'
+      nextStatus = '捷径失败，踩到雷了！'
+      this.clearTimer()
+    } else {
+      if (revealedSafe > 0) {
+        nextState = 'playing'
+      }
+      if (updatedRevealedSafe >= safeCells) {
+        nextState = 'won'
+        nextStatus = '恭喜你，成功排雷！'
+        this.clearTimer()
+        nextBoard = Minesweeper.revealMinesAndMarkMistakes(expandedBoard, flags)
+      }
+    }
+
+    this.setData({
+      board: nextBoard,
+      displayGrid: this.composeDisplayGrid(nextBoard, flags, nextState),
       gameState: nextState,
       statusMessage: nextStatus,
       revealedSafeCount: updatedRevealedSafe
