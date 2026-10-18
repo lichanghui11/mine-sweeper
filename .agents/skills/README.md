@@ -12,6 +12,6 @@
 
 React 技能的原始名称为 vercel-react-best-practices。支持 .agents/skills 的客户端可自动发现；其他客户端可指定 SKILL.md 路径读取。更新时检查规则和依赖变化。这些文件不安装 MCP，也不等于已安装测试运行依赖。
 
-atomic-commits：2026-10-17 安装，来源 centitenka/atomic-commits（main），包含原始技能及配套文件。
+atomic-commits：2026-10-17 安装，来源 centitenka/atomic-commits（main）。已删除 Agent 共同作者署名规则；提交只使用仓库的人类 Git 用户。
 
 executing-plans：2026-10-17 添加，项目维护的独立适配版，借鉴 [obra/superpowers executing-plans](https://github.com/obra/superpowers/tree/main/skills/executing-plans) 的方法，非上游原版。以当前 Agent 执行和单一权威文档为基线，复用已安装技能，无上游脚本或额外技能依赖。

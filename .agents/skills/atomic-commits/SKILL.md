@@ -172,26 +172,13 @@ When history is mixed and no instruction resolves it, follow the dominant
 recent convention in the affected area, then the language used by the user for
 the task.
 
-## Attribute material Agent contributions
+## Do not attribute Agent authorship
 
-When the current Agent materially authored or changed content in a commit,
-append its co-author trailer exactly once unless the user or repository has an
-explicitly different attribution policy. Do not claim co-authorship when the
-Agent only inspected, staged, or described otherwise human-authored changes.
-
-Before selecting a trailer, read
-[references/agent-co-authors.md](references/agent-co-authors.md). Identify the
-Agent framework and the fullest reliable active model identity from runtime or
-configuration context. Include the exact model version, framework-specific
-variant, and active reasoning effort or mode when exposed. For example, use
-`GPT-5.6 Sol High`, not the lossy family name `GPT-5`. Reuse an official vendor
-email when one exists, but do not omit model details merely because the
-vendor's default trailer does. Never invent an email, version, variant, or
-effort level. Keep one blank line before the trailer block and preserve other
-trailers.
-
-The fixed identity in a trailer does not determine the language of the commit
-subject or body.
+Never add `Co-Authored-By`, `Co-authored-by`, or any other trailer that names
+an Agent, model, or coding tool as a commit author or co-author. Never set
+`GIT_AUTHOR_*` or `GIT_COMMITTER_*` to an Agent identity. Commits must use
+only the repository's human Git user. Do not create or restore
+`references/agent-co-authors.md`.
 
 ## Report the result
 
