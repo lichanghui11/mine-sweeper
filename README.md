@@ -1,45 +1,47 @@
-# 扫雷 Web
+# Minesweeper Web
 
-基于 Next.js App Router、React、TypeScript 与 Hono 的单机扫雷游戏。
+**English** | [简体中文](./README.zh-CN.md)
 
-## 开始使用
+A single-player minesweeper game built with Next.js App Router, React, TypeScript, and Hono.
 
-使用 Node.js 24 LTS 和 npm：
+## Getting started
+
+Use Node.js 24 LTS and npm:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-打开 http://localhost:3000 。开发服务监听所有网卡，手机与电脑在同一局域网时，可通过电脑 IP 和端口访问。
+Open http://localhost:3000. The dev server listens on all network interfaces, so a phone on the same LAN can use the computer's IP and port.
 
-## 保留的功能
+## Features
 
-- 默认 12 × 12 棋盘、26 枚地雷；首击时布雷，保护首击及相邻八格。
-- 空白扩散、数字提示、旗帜与问号循环、双击数字快速开。
-- 剩余雷数、用时、状态说明、重新开始。
-- 五种音效、失败震动与闪光、爆炸格、错旗提示、胜利庆祝。
-- 桌面与手机布局，键盘操作和减少动态效果支持。
+- Default 12 × 12 board with 26 mines. Mines are placed on the first click, protecting that cell and its eight neighbors.
+- Flood fill, number hints, flag / question-mark cycle, and double-click chord on numbers.
+- Remaining mines, timer, status text, and restart.
+- Five sound effects, lose shake and flash, exploded cell, wrong-flag hints, and a win celebration.
+- Desktop and mobile layouts, keyboard controls, and reduced-motion support.
 
-鼠标左键翻格，右键循环标记；触屏轻点翻格、长按 450ms 标记，也可使用标记模式按钮。双击数字窗口为 250ms；旗数匹配时展开邻格，误标可能踩雷。旗数不匹配时不操作。
+Left-click reveals a cell; right-click cycles marks. On touch, tap to reveal and long-press 450ms to mark, or use the mark-mode button. The double-click window is 250ms. When the flag count matches, neighboring cells open; a misplaced flag can hit a mine. If the flag count does not match, nothing happens.
 
-方向键移动焦点，Enter / 空格翻格，F 标记，C 快速开。所有非雷格翻开即胜利，无需插满旗帜。首次插旗不启动计时；切换标签页继续计时。刷新页面开启新局，未提供存档或排行榜。
+Arrow keys move focus. Enter / Space reveals, F marks, C chords. You win by revealing every safe cell; you do not need to flag every mine. The first flag does not start the timer. Timing continues if you switch browser tabs. Refreshing the page starts a new game. There is no save or leaderboard.
 
-## 架构
+## Architecture
 
-- `src/app`：Next.js 页面、全局样式、静态配置与状态文件导出。
-- `src/features/minesweeper/engine.ts`：纯函数游戏引擎，独立于 React。
-- `src/features/minesweeper/MinesweeperGame.tsx`：界面、手势、计时、音效和动画。
-- `src/server/app.ts`：Hono API，包含 `/api/health` 和 `/api/config`。
-- `src/shared/game-config.ts`：默认参数与配置校验。
-- `public/audio`：原版五种音效。
-- `tests/engine.test.ts`：核心规则和 API 测试。
+- `src/app`: Next.js pages, global styles, and static config / status file export.
+- `src/features/minesweeper/engine.ts`: Pure game engine, independent of React.
+- `src/features/minesweeper/MinesweeperGame.tsx`: UI, gestures, timer, audio, and animation.
+- `src/server/app.ts`: Hono API with `/api/health` and `/api/config`.
+- `src/shared/game-config.ts`: Default settings and config validation.
+- `public/audio`: The original five sound effects.
+- `tests/engine.test.ts`: Core rules and API tests.
 
-棋盘状态保存在浏览器内存中，操作不依赖网络。配置从构建时生成的静态 JSON 读取；读取失败时使用内置默认配置，新配置仅在重新开始时应用。修改默认尺寸、雷数、问号开关可编辑共享配置文件，雷数必须允许首击九宫格保护。
+Board state lives in browser memory, and play does not require the network. Config is read from static JSON generated at build time. If that fails, built-in defaults are used. New config applies only after restart. To change default size, mine count, or question marks, edit the shared config file. Mine count must leave room for first-click 3×3 protection.
 
-相较旧版修正：已翻格不能插旗，胜利后保留数字，统一清理效果与计时器，以实际时间差计算用时，避免后台计时漂移。
+Fixes versus the old version: revealed cells cannot be flagged, numbers stay visible after a win, effects and timers are cleaned up together, and elapsed time uses real time deltas so background timing does not drift.
 
-## 验证和生产运行
+## Verify and production
 
 ```sh
 npm test
@@ -47,19 +49,19 @@ npm run typecheck
 npm run build
 ```
 
-构建输出在 `out/`，由静态托管服务提供；不再使用 `next start`。本地开发仍使用 `npm run dev`。`/api/config.json` 与 `/api/health.json` 在构建时生成，不运行常驻 Hono 服务；健康文件只说明静态产物存在。
+Build output is in `out/` and is served as static files. `next start` is no longer used. Local development still uses `npm run dev`. `/api/config.json` and `/api/health.json` are generated at build time; there is no long-running Hono process. The health file only indicates that the static output exists.
 
-## GitHub Pages 部署
+## GitHub Pages
 
-- 源码：https://github.com/lichanghui11/mine-sweeper
-- 在线体验：https://lichanghui11.github.io/mine-sweeper/
-- 仓库 `Settings → Pages → Build and deployment → Source` 选择 `GitHub Actions`。
-- 推送到 `main` 自动运行 `.github/workflows/pages.yml`，也可在 Actions 手动运行。
-- 工作流使用 Node.js 24、`npm ci` 与 `package-lock.json`，测试、类型检查和构建成功后发布 `out/`。
-- `NEXT_PUBLIC_BASE_PATH` 由 Pages 配置提供，页面、配置文件和音效一起适配仓库子路径；无需添加个人 token 或仓库 Secret。
-- 默认本地构建不带子路径。复现 Pages 构建时，在 PowerShell 设置 `$env:NEXT_PUBLIC_BASE_PATH = '/mine-sweeper'` 后执行 `npm run build`；完成后执行 `Remove-Item Env:NEXT_PUBLIC_BASE_PATH`。
-- 修改游戏默认配置后需重新构建部署。自定义域名时，重新运行工作流以获取对应的路径配置。
+- Source: https://github.com/lichanghui11/mine-sweeper
+- Play online: https://lichanghui11.github.io/mine-sweeper/
+- In the repo, set `Settings → Pages → Build and deployment → Source` to `GitHub Actions`.
+- Pushing to `main` runs `.github/workflows/pages.yml`; you can also run it manually in Actions.
+- The workflow uses Node.js 24, `npm ci`, and `package-lock.json`. It publishes `out/` after tests, typecheck, and build succeed.
+- `NEXT_PUBLIC_BASE_PATH` comes from the Pages config so pages, config files, and audio work under the repo subpath. No personal token or repository secret is required.
+- Local builds omit the subpath by default. To reproduce the Pages build in PowerShell, set `$env:NEXT_PUBLIC_BASE_PATH = '/mine-sweeper'`, run `npm run build`, then `Remove-Item Env:NEXT_PUBLIC_BASE_PATH`.
+- After changing default game config, rebuild and redeploy. If you use a custom domain, rerun the workflow so path config matches.
 
-## 许可证
+## License
 
-沿用原项目约定，仅用于学习与内部演示。对外发布或商业化请先取得原作者许可。
+Follows the original project terms: learning and internal demos only. Ask the original author before public or commercial use.
