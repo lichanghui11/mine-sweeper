@@ -27,7 +27,7 @@ npm run dev
 
 ## 架构
 
-- `src/app`：Next.js 页面、全局样式、Hono 请求适配。
+- `src/app`：Next.js 页面、全局样式、静态配置与状态文件导出。
 - `src/features/minesweeper/engine.ts`：纯函数游戏引擎，独立于 React。
 - `src/features/minesweeper/MinesweeperGame.tsx`：界面、手势、计时、音效和动画。
 - `src/server/app.ts`：Hono API，包含 `/api/health` 和 `/api/config`。
@@ -35,7 +35,7 @@ npm run dev
 - `public/audio`：原版五种音效。
 - `tests/engine.test.ts`：核心规则和 API 测试。
 
-棋盘状态保存在浏览器内存中，操作不依赖网络。配置请求失败时使用内置默认配置；新配置仅在重新开始时应用。修改默认尺寸、雷数、问号开关可编辑共享配置文件，雷数必须允许首击九宫格保护。
+棋盘状态保存在浏览器内存中，操作不依赖网络。配置从构建时生成的静态 JSON 读取；读取失败时使用内置默认配置，新配置仅在重新开始时应用。修改默认尺寸、雷数、问号开关可编辑共享配置文件，雷数必须允许首击九宫格保护。
 
 相较旧版修正：已翻格不能插旗，胜利后保留数字，统一清理效果与计时器，以实际时间差计算用时，避免后台计时漂移。
 
@@ -45,10 +45,20 @@ npm run dev
 npm test
 npm run typecheck
 npm run build
-npm run start
 ```
 
-也可使用 `npm run start -- --port 3100` 指定端口。部署至支持 Node.js 的 Next.js 托管环境或服务器；Hono API 随应用部署，无需数据库或独立后端端口。不能使用纯静态导出部署。
+构建输出在 `out/`，由静态托管服务提供；不再使用 `next start`。本地开发仍使用 `npm run dev`。`/api/config.json` 与 `/api/health.json` 在构建时生成，不运行常驻 Hono 服务；健康文件只说明静态产物存在。
+
+## GitHub Pages 部署
+
+- 源码：https://github.com/lichanghui11/mine-sweeper
+- 在线体验：https://lichanghui11.github.io/mine-sweeper/
+- 仓库 `Settings → Pages → Build and deployment → Source` 选择 `GitHub Actions`。
+- 推送到 `main` 自动运行 `.github/workflows/pages.yml`，也可在 Actions 手动运行。
+- 工作流使用 Node.js 24、`npm ci` 与 `package-lock.json`，测试、类型检查和构建成功后发布 `out/`。
+- `NEXT_PUBLIC_BASE_PATH` 由 Pages 配置提供，页面、配置文件和音效一起适配仓库子路径；无需添加个人 token 或仓库 Secret。
+- 默认本地构建不带子路径。复现 Pages 构建时，在 PowerShell 设置 `$env:NEXT_PUBLIC_BASE_PATH = '/mine-sweeper'` 后执行 `npm run build`；完成后执行 `Remove-Item Env:NEXT_PUBLIC_BASE_PATH`。
+- 修改游戏默认配置后需重新构建部署。自定义域名时，重新运行工作流以获取对应的路径配置。
 
 ## 许可证
 

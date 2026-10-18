@@ -4,6 +4,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { DEFAULT_CONFIG, isGameConfig, type GameConfig } from '../../shared/game-config';
 import { createGame, reduceGame, type Cell } from './engine';
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 const sounds = ['click', 'expand', 'flag', 'win', 'lose'] as const;
 function label(cell: Cell, ended: boolean) {
   if (cell.exploded) return '爆炸';
@@ -31,7 +32,7 @@ export function MinesweeperGame() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/config', { signal: controller.signal }).then(r => r.ok ? r.json() : null).then(c => { if (isGameConfig(c)) setConfig(c); }).catch(() => {});
+    fetch(`${basePath}/api/config.json`, { signal: controller.signal }).then(r => r.ok ? r.json() : null).then(c => { if (isGameConfig(c)) setConfig(c); }).catch(() => {});
     return () => controller.abort();
   }, []);
   useEffect(() => {
@@ -58,7 +59,7 @@ export function MinesweeperGame() {
 
   function unlockAudio() {
     if (!Object.keys(audio.current).length) for (const key of sounds) {
-      const sound = new Audio(`/audio/minesweeper_${key}.wav`); sound.preload = 'auto'; audio.current[key] = sound;
+      const sound = new Audio(`${basePath}/audio/minesweeper_${key}.wav`); sound.preload = 'auto'; audio.current[key] = sound;
     }
   }
   function mark(index: number) { unlockAudio(); tap.current = null; dispatch({ type: 'mark', index, now: Date.now() }); }
@@ -74,7 +75,7 @@ export function MinesweeperGame() {
   function reset() { cancelGesture(); gesture.current = null; tap.current = null; setClock(0); dispatch({ type: 'reset', config }); }
 
   return <main className={`page ${effects && game.status === 'lost' ? 'shake' : ''}`}>
-    <header className="header"><a className="brand" href="/" aria-label="扫雷首页"><span className="brand-icon">✳</span> 小小扫雷<span className="brand-en">MINESWEEPER</span></a><span className="edition">经典游戏 · 全新一局</span></header>
+    <header className="header"><a className="brand" href={`${basePath}/`} aria-label="扫雷首页"><span className="brand-icon">✳</span> 小小扫雷<span className="brand-en">MINESWEEPER</span></a><span className="edition">经典游戏 · 全新一局</span></header>
     <section className="intro"><div className="eyebrow"><span /> 留一点时间，给一点挑战</div><h1>每一步，<span>都有可能。</span></h1><p>放慢一点，发现数字之间的线索。</p></section>
     <section className="game-shell" aria-label="扫雷游戏">
       <div className="game-top"><div><span className={`status-dot ${game.status}`} /><strong>{game.status === 'idle' ? '准备就绪' : game.status === 'playing' ? '排雷进行中' : game.status === 'won' ? '排雷成功' : '下次会更好'}</strong><span className="difficulty">经典 · {game.config.cols} × {game.config.rows}</span></div><button className="sound-button" onClick={() => setMuted(v => !v)} aria-pressed={muted} aria-label={muted ? '开启音效' : '关闭音效'}>{muted ? '♪ 音效关' : '♫ 音效开'}</button></div>
