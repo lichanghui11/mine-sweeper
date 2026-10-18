@@ -1,0 +1,6 @@
+interface:
+  display_name: "Atomic Commits"
+  short_description: "Apply reviewable, atomic Git commit discipline"
+  default_prompt: "Use $atomic-commits to inspect these changes and prepare a safe, atomic commit plan."
+policy:
+  allow_implicit_invocation: true
