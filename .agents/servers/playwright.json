@@ -1,0 +1,14 @@
+{
+  "id": "playwright",
+  "label": "Playwright",
+  "description": "用可访问性树驱动浏览器:打开页面、点击、填表、截图",
+  "transport": "stdio",
+  "command": "npx",
+  "args": [
+    "-y",
+    "@playwright/mcp@latest"
+  ],
+  "env": {},
+  "url": null,
+  "headers": {}
+}

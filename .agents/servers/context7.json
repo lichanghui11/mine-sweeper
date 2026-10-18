@@ -1,0 +1,14 @@
+{
+  "id": "context7",
+  "label": "Context7",
+  "description": "随时查到各框架/库的最新版文档,避免模型凭旧记忆写代码",
+  "transport": "stdio",
+  "command": "npx",
+  "args": [
+    "-y",
+    "@upstash/context7-mcp"
+  ],
+  "env": {},
+  "url": null,
+  "headers": {}
+}

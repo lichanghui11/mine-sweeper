@@ -1,0 +1,13 @@
+{
+  "id": "git",
+  "label": "Git",
+  "description": "读取仓库状态、diff、log,并执行常用 Git 操作",
+  "transport": "stdio",
+  "command": "uvx",
+  "args": [
+    "mcp-server-git"
+  ],
+  "env": {},
+  "url": null,
+  "headers": {}
+}
