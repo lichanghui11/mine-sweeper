@@ -1,9 +1,10 @@
-import { DEFAULT_CONFIG, type GameConfig } from '../../shared/game-config';
+import { DEFAULT_CONFIG, isGameConfig, type GameConfig } from '../../shared/game-config';
 
 export type Cell = { mine: boolean; revealed: boolean; mark: 'none' | 'flag' | 'question'; adjacent: number; exploded: boolean };
 export type Game = { config: GameConfig; cells: Cell[]; status: 'idle' | 'playing' | 'won' | 'lost'; startedAt: number | null; endedAt: number | null; event: 'none' | 'click' | 'expand' | 'flag' | 'win' | 'lose'; revision: number };
 export type Action = { type: 'reset'; config?: GameConfig } | { type: 'reveal' | 'mark' | 'chord'; index: number; now: number; random?: () => number };
 export function createGame(config: GameConfig = DEFAULT_CONFIG): Game {
+  if (!isGameConfig(config)) throw new RangeError('无效的扫雷配置：棋盘尺寸和雷数必须允许首击九宫格保护');
   return { config: { ...config }, cells: Array.from({ length: config.rows * config.cols }, () => ({ mine: false, revealed: false, mark: 'none', adjacent: 0, exploded: false })), status: 'idle', startedAt: null, endedAt: null, event: 'none', revision: 0 };
 }
 export function neighbors(index: number, config: GameConfig): number[] {
@@ -48,7 +49,7 @@ export function reduceGame(state: Game, action: Action): Game {
     const index = queue.pop()!, current = game.cells[index];
     if (current.revealed || current.mark === 'flag') continue;
     current.revealed = true; current.mark = 'none'; opened++;
-    if (current.mine) { current.exploded = true; game.status = 'lost'; continue; }
+    if (current.mine) { current.exploded = true; game.status = 'lost'; break; }
     if (!current.adjacent) queue.push(...neighbors(index, game.config).filter(i => !game.cells[i].revealed && !game.cells[i].mine));
   }
   if (game.status !== 'lost' && game.cells.every(c => c.mine || c.revealed)) game.status = 'won';
